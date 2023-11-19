@@ -7,6 +7,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.security.Key;
+import java.security.Provider;
+import java.security.Security;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.spec.SecretKeySpec;
@@ -18,6 +20,15 @@ public class AESKeyGenerator {
         // check args
         if (args.length < 2) {
             System.err.println("Usage: aes-key-gen [r|w] <key-file>");
+            Provider[] providers = Security.getProviders();
+            for (Provider provider : providers) {
+                for (Provider.Service service : provider.getServices()) {
+                    if (service.getType().equals("Cipher") && service.getAlgorithm().equals("AES")) {
+                        System.out.println(provider.getName());
+                        break;
+                    }
+                }
+            }
             return;
         }
 
@@ -38,7 +49,7 @@ public class AESKeyGenerator {
     public static void write(String keyPath) throws GeneralSecurityException, IOException {
         // get an AES private key
         System.out.println("Generating AES key ...");
-        KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+        KeyGenerator keyGen = KeyGenerator.getInstance("AES", "SunJCE");
         keyGen.init(128);
         Key key = keyGen.generateKey();
         System.out.println("Finish generating AES key");
